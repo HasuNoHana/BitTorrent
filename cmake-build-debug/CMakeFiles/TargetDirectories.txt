@@ -1,3 +1,0 @@
-/home/ola/Pulpit/TIN/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/ola/Pulpit/TIN/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/ola/Pulpit/TIN/cmake-build-debug/CMakeFiles/TIN.dir

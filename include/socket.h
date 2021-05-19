@@ -3,21 +3,20 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
-//create socket, define address etc., return socket Descriptor
 int createSocket();
 
-//close socket
 void closeSocket(int socketDescriptor);
 
-int listenToConnect();
+void listenToConnect(int socketDescriptor);
 
-int acceptConnection(int socketDescriptor);
+int acceptConnection(int socketDescriptor, struct sockaddr_in client);
 
-int connectToDifferentSocket(int socketDescriptor);
+int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server);
 
-void sendData(int socketDescriptor, char *buf);
+int sendData(int socketDescriptor, char *buf, int dataSize);
 
-char *receiveData(int socketDescriptor);
+char *receiveData(int socketDescriptor, int dataSize) ;
 
 #endif
