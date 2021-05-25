@@ -5,6 +5,6 @@
 #ifndef TIN_METADATA_H
 #define TIN_METADATA_H
 
-void createMetadataFile( char *sharedFileName, int size, char *trackerUrl );
+void createMetadataFile( char *sharedFileName, int size, char *trackerUrl, int trackerUrlSize );
 
 #endif //TIN_METADATA_H

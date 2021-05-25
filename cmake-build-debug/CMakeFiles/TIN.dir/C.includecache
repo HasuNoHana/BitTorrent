@@ -6,7 +6,17 @@
 
 #IncludeRegexTransform: 
 
-/home/ola/Pulpit/TIN/main.c
+/home/zuznanna/CLionProjects/bitTorrent/source/metadata.c
 stdio.h
+-
+sys/types.h
+-
+sys/stat.h
+-
+unistd.h
+-
+string.h
+-
+stdlib.h
 -
 
