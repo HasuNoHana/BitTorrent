@@ -1,0 +1,8 @@
+d8:announce<url length>:<url>
+4:info d
+6:length i<file size>e
+4:name <file name length>:<file name> 
+12:piece length i<piece length>e
+6:pieces  l<HashPiece1><...><HashPieceN>e 
+e
+e
