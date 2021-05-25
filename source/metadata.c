@@ -12,6 +12,8 @@ void insertAnnounance(FILE *metadataFile, char *url, int size);
 
 void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize);
 
+void insertLength(FILE *metadataFile, long long int fileSize);
+
 /*
  * How bencoded torrent file looks like(without whitespaces):
  *
@@ -92,10 +94,16 @@ void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trac
 
 void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
     fprintf(metadataFile, "%s", "4:infod");
-    insertLength(fileSize);
-    insertName(fileName, fileSize);
+    insertLength(metadataFile, fileSize);
+//    insertName(metadataFile, fileName, fileSize);
 //    insertPieceLength();TODO
 //    insertPieces();
+    fprintf(metadataFile, "%s", "e");
+}
+
+void insertLength(FILE *metadataFile, long long int fileSize) {
+    fprintf(metadataFile, "%s", "6:lengthi");
+    fprintf(metadataFile, "%lld", fileSize);
     fprintf(metadataFile, "%s", "e");
 }
 

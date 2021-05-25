@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/TIN.dir/main.c.o"
+  "CMakeFiles/TIN.dir/source/metadata.c.o"
   "CMakeFiles/TIN.dir/source/socekt.c.o"
   "TIN"
   "TIN.pdb"
