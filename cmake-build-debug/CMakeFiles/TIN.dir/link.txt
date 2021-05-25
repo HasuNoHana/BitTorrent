@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/TIN.dir/main.c.o CMakeFiles/TIN.dir/source/socekt.c.o CMakeFiles/TIN.dir/source/metadata.c.o  -o TIN 
+/usr/bin/cc -g CMakeFiles/TIN.dir/main.c.o CMakeFiles/TIN.dir/source/socekt.c.o -o TIN 

@@ -4,9 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/zuznanna/CLionProjects/bitTorrent/main.c" "/home/zuznanna/CLionProjects/bitTorrent/cmake-build-debug/CMakeFiles/TIN.dir/main.c.o"
-  "/home/zuznanna/CLionProjects/bitTorrent/source/metadata.c" "/home/zuznanna/CLionProjects/bitTorrent/cmake-build-debug/CMakeFiles/TIN.dir/source/metadata.c.o"
-  "/home/zuznanna/CLionProjects/bitTorrent/source/socekt.c" "/home/zuznanna/CLionProjects/bitTorrent/cmake-build-debug/CMakeFiles/TIN.dir/source/socekt.c.o"
+  "/home/ola/Pulpit/TIN/main.c" "/home/ola/Pulpit/TIN/cmake-build-debug/CMakeFiles/TIN.dir/main.c.o"
+  "/home/ola/Pulpit/TIN/source/socekt.c" "/home/ola/Pulpit/TIN/cmake-build-debug/CMakeFiles/TIN.dir/source/socekt.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
