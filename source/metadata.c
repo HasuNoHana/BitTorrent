@@ -10,6 +10,8 @@
 
 void insertAnnounance(FILE *metadataFile, char *url, int size);
 
+void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize);
+
 /*
  * How bencoded torrent file looks like(without whitespaces):
  *
@@ -62,10 +64,10 @@ long long getSharedFileSizeInBytes(char *sharedPath){
     return (long long) systemInformationAboutSharedFile.st_size;
 }
 
-void createMetadataFile( char *sharedFileName, int size, char *trackerUrl,  int trackerUrlSize ) {
+void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trackerUrl, int trackerUrlSize ) {
 
-    char *sharedPath = getPathOfSharedFile(sharedFileName, size);
-    char *metadataPath = getPathOfMetadataFile(sharedFileName, size);
+    char *sharedPath = getPathOfSharedFile(sharedFileName, sharedFileNameSize);
+    char *metadataPath = getPathOfMetadataFile(sharedFileName, sharedFileNameSize);
 
 //    printf(sharedPath);
 //    printf(metadataPath);
@@ -78,18 +80,27 @@ void createMetadataFile( char *sharedFileName, int size, char *trackerUrl,  int 
         printf("Error!");
         exit(1);
     }
+    fprintf(metadataFile, "%s", "d");
     insertAnnounance(metadataFile, trackerUrl, trackerUrlSize);
-//    fprintf(metadataFile, "%s", "d8:announce");
-
-//    fprintf(metadataFile,"%d",6);
+    insertInfo(metadataFile, sharedFileName, sharedFileNameSize, sharedFileSizeInBytes);
+    fprintf(metadataFile, "%s", "e");
 
     fclose(metadataFile);
 
 
 }
 
+void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
+    fprintf(metadataFile, "%s", "4:infod");
+    insertLength(fileSize);
+    insertName(fileName, fileSize);
+//    insertPieceLength();TODO
+//    insertPieces();
+    fprintf(metadataFile, "%s", "e");
+}
+
 void insertAnnounance(FILE *metadataFile, char *url, int size) {
-    fprintf(metadataFile, "%s", "d8:announce");
+    fprintf(metadataFile, "%s", "8:announce");
     fprintf(metadataFile, "%d", size);
     fprintf(metadataFile, "%s", ":");
     fprintf(metadataFile, "%s", url);
