@@ -5,7 +5,7 @@ int main() {
     printf("Hello, World!\n");
 
     char sharedFileName[] = "test";
-    createMetadataFile(sharedFileName, 5, "trackerUrl", 10);
+    createMetadataFile(sharedFileName, 4, "trackerUrl", 10);
 
 
     return 0;
