@@ -7,14 +7,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-
-void insertAnnounance(FILE *metadataFile, char *url, int size);
-
-void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize);
-
-void insertLength(FILE *metadataFile, long long int fileSize);
-
-void insertName(FILE *metadataFile, char *fileName, long long int fileNameSize);
+#include <openssl/md5.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <openssl/md5.h>
 
 /*
  * How bencoded torrent file looks like(without whitespaces):
@@ -68,41 +65,6 @@ long long getSharedFileSizeInBytes(char *sharedPath){
     return (long long) systemInformationAboutSharedFile.st_size;
 }
 
-void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trackerUrl, int trackerUrlSize ) {
-
-    char *sharedPath = getPathOfSharedFile(sharedFileName, sharedFileNameSize);
-    char *metadataPath = getPathOfMetadataFile(sharedFileName, sharedFileNameSize);
-
-//    printf(sharedPath);
-//    printf(metadataPath);
-
-    long long sharedFileSizeInBytes = getSharedFileSizeInBytes(sharedPath);
-//    printf("%lld\n", sharedFileSizeInBytes);
-
-    FILE *metadataFile = fopen(metadataPath,"w");
-    if(metadataFile == NULL){
-        printf("Error!");
-        exit(1);
-    }
-    fprintf(metadataFile, "%s", "d");
-    insertAnnounance(metadataFile, trackerUrl, trackerUrlSize);
-    insertInfo(metadataFile, sharedFileName, sharedFileNameSize, sharedFileSizeInBytes);
-    fprintf(metadataFile, "%s", "e");
-
-    fclose(metadataFile);
-
-
-}
-
-void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
-    fprintf(metadataFile, "%s", "4:infod");
-    insertLength(metadataFile, fileSize);
-    insertName(metadataFile, fileName, fileNameSize);
-//    insertPieceLength();TODO
-//    insertPieces();
-    fprintf(metadataFile, "%s", "e");
-}
-
 void insertName(FILE *metadataFile, char *fileName, long long int fileNameSize) {
     fprintf(metadataFile, "%s", "4:name");
     fprintf(metadataFile, "%lld", fileNameSize);
@@ -123,4 +85,76 @@ void insertAnnounance(FILE *metadataFile, char *url, int size) {
     fprintf(metadataFile, "%s", url);
 }
 
+void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
+    fprintf(metadataFile, "%s", "4:infod");
+    insertLength(metadataFile, fileSize);
+    insertName(metadataFile, fileName, fileNameSize);
+//    insertPieceLength();TODO
+//    insertPieces();
+    fprintf(metadataFile, "%s", "e");
+}
 
+const char *hexString(unsigned char *data, size_t length, char *buffer) {
+    const char *hexDigits = "0123456789abcdef";
+    char *dest = buffer;
+    for (size_t i = 0; i < length; i++) {
+        *dest++ = hexDigits[data[i] >> 4];
+        *dest++ = hexDigits[data[i] & 0x0F];
+    }
+    *dest = 0;
+    return buffer;
+}
+
+unsigned char* getMD5Hash(char *filename) {
+    unsigned char *c= malloc (sizeof (unsigned char) * MD5_DIGEST_LENGTH);;
+    int i;
+    FILE *inFile = fopen (filename, "rb");
+    MD5_CTX mdContext;
+    int bytes;
+    unsigned char data[1024];
+
+    if (inFile == NULL) {
+        printf ("%s can't be opened.\n", filename);
+        exit(1);
+    }
+
+    MD5_Init (&mdContext);
+    while ((bytes = fread (data, 1, 1024, inFile)) != 0)
+        MD5_Update (&mdContext, data, bytes);
+    MD5_Final (c,&mdContext);
+
+    fclose (inFile);
+    return c;
+}
+
+void printHash(unsigned char *hash){
+    for(int i = 0; i < MD5_DIGEST_LENGTH; i++) printf("%02x", hash[i]);
+}
+
+void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trackerUrl, int trackerUrlSize ) {
+
+    char *sharedPath = getPathOfSharedFile(sharedFileName, sharedFileNameSize);
+    char *metadataPath = getPathOfMetadataFile(sharedFileName, sharedFileNameSize);
+
+    long long sharedFileSizeInBytes = getSharedFileSizeInBytes(sharedPath);
+
+    unsigned char *hash = getMD5Hash(sharedPath);
+
+    printHash(hash);
+
+
+
+    FILE *metadataFile = fopen(metadataPath,"w");
+    if(metadataFile == NULL){
+        printf("Error!");
+        exit(1);
+    }
+    fprintf(metadataFile, "%s", "d");
+    insertAnnounance(metadataFile, trackerUrl, trackerUrlSize);
+    insertInfo(metadataFile, sharedFileName, sharedFileNameSize, sharedFileSizeInBytes);
+    fprintf(metadataFile, "%s", "e");
+
+    fclose(metadataFile);
+
+
+}
