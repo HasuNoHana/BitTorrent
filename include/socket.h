@@ -4,6 +4,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include<stdio.h>
+#include<string.h>
+#include<sys/socket.h>
+#include<unistd.h>
+#include <malloc.h>
 
 int createSocket();
 
@@ -13,10 +18,12 @@ void listenToConnect(int socketDescriptor);
 
 int acceptConnection(int socketDescriptor, struct sockaddr_in client);
 
+int closeConnection(int socketDescriptor);
+
 int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server);
 
 int sendData(int socketDescriptor, char *buf, int dataSize);
 
-char *receiveData(int socketDescriptor, int dataSize) ;
+char *receiveData(int socketDescriptor, int dataSize);
 
 #endif

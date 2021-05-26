@@ -1,9 +1,5 @@
 #include "../include/socket.h"
-#include<stdio.h>
-#include<string.h>
-#include<sys/socket.h>
-#include<unistd.h>
-#include <malloc.h>
+
 
 int createSocket() {
     int socketDescriptor = socket(AF_INET6, SOCK_STREAM, 0);
@@ -34,7 +30,15 @@ int acceptConnection(int socketDescriptor, struct sockaddr_in client) {
         return 1;
     }
     puts("Connection accepted\n");
+    return 0;
 }
+
+int closeConnection(int socketDescriptor) {
+    //zwraca 0 gdy zamknięty poprawnie i -1 gdy error
+    //drugi argument oznacza, że przestajemy zarówno wysyłac jak i odbierać dane
+    return shutdown(socketDescriptor, 2);
+}
+
 
 int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server) {
     if (connect(socketDescriptor, (struct sockaddr *) &server, sizeof(server)) < 0) {
@@ -45,26 +49,29 @@ int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server) {
     return 0;
 }
 
-int sendData(int socketDescriptor, char *buf, int dataSize){
-    if (send(socketDescriptor, buf, dataSize, 0) < 0) {
+int sendData(int socketDescriptor, char *buf, int dataSize) {
+    int numberOfSent = send(socketDescriptor, buf, dataSize, 0);
+    if (numberOfSent < 0) {
         puts("Send failed\n");
         return 1;
     } else {
         puts("Data sent\n");
-        return 0;
+        return numberOfSent;
     }
 }
 
 char *receiveData(int socketDescriptor, int dataSize) {
     char *data = malloc(dataSize);
-    if(!data)
+    if (!data)
         return NULL;
-
-    if( recv(socketDescriptor , data , dataSize , 0) < 0)
-    {
+    int numberOfRead = recv(socketDescriptor, data, dataSize, 0);
+    if (numberOfRead < 0) {
         puts("Error while receiving data!\n");
         return NULL;
-    }else{
+    } else if(numberOfRead == 0){
+        return 0;
+    }
+    else {
         return data;
     }
 
