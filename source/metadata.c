@@ -106,6 +106,12 @@ void insertPieceLength(FILE *metadataFile, long long int pieceLength) {
     fprintf(metadataFile, "%s", "e");
 }
 
+void insertPieces(FILE *metadataFile, char *fileName) {
+    fprintf(metadataFile, "%s", "6:piecesl");
+    //TODO
+    fprintf(metadataFile, "%s", "e");
+}
+
 void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
     fprintf(metadataFile, "%s", "4:infod");
     insertLength(metadataFile, fileSize);
@@ -115,7 +121,7 @@ void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long 
     long long firstPieceSizeInBytes = getSharedFileSizeInBytes(firstPiecePath);
     insertPieceLength(metadataFile, firstPieceSizeInBytes);
 
-//    insertPieces();TODO
+    insertPieces(metadataFile, fileName);
     fprintf(metadataFile, "%s", "e");
 }
 
