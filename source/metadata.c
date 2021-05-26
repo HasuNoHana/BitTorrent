@@ -8,10 +8,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <openssl/md5.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <openssl/md5.h>
+
+
+char* SHARED_FILE_EXTENSION = ".txt";
+int SHARED_FILE_EXTENSION_LENGTH = 4;
 
 /*
  * How bencoded torrent file looks like(without whitespaces):
@@ -28,22 +28,21 @@
 
 char* getPathOfSharedFile(char *sharedFileName, int sharedFileNameSize){
     //size = folderName size + sharedFileName size + extension size + 1
-    int s = 15+sharedFileNameSize+4+1;
+    int s = 15+sharedFileNameSize+SHARED_FILE_EXTENSION_LENGTH+1;
     char *path = malloc (sizeof (char) * s);
     for(int i=0; i<s; i++){
         path[i]=(char)0;
     }
     char folder[] = "../sharedFiles/";
-    char extension[] = ".txt";//TODO usun bo nazwa pliku bedzie z rozszerzeniem
     strcat(path, folder);
     strcat(path, sharedFileName);
-    strcat(path, extension);
+    strcat(path, SHARED_FILE_EXTENSION);
     return path;
 }
 
 char* getPathOfMetadataFile(char *torrentFileName, int sharedFileNameSize){
     //size = folderName size + sharedFileName size + extension size + 1
-    int s = 18+sharedFileNameSize+5+1;
+    int s = 18+sharedFileNameSize+4+1;
     char *path = malloc (sizeof (char) * s);
     for(int i=0; i<s; i++){
         path[i]=(char)0;
@@ -85,12 +84,38 @@ void insertAnnounance(FILE *metadataFile, char *url, int size) {
     fprintf(metadataFile, "%s", url);
 }
 
+char* getPathOfFirstPiece(char *sharedFileName, int fileNameSize) {
+    //size = folderName size + sharedFileName size + extension size + firstPieceLength + 1
+    int s = 15+fileNameSize+SHARED_FILE_EXTENSION_LENGTH+2+1;
+    char *path = malloc (sizeof (char) * s);
+    for(int i=0; i<s; i++){
+        path[i]=(char)0;
+    }
+    char folder[] = "../sharedFiles/";
+    char firstPiece[] = "/1";
+    strcat(path, folder);
+    strcat(path, sharedFileName);
+    strcat(path, firstPiece);
+    strcat(path, SHARED_FILE_EXTENSION);
+    return path;
+}
+
+void insertPieceLength(FILE *metadataFile, long long int pieceLength) {
+    fprintf(metadataFile, "%s", "12:piece lengthi");
+    fprintf(metadataFile, "%d", pieceLength);
+    fprintf(metadataFile, "%s", "e");
+}
+
 void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
     fprintf(metadataFile, "%s", "4:infod");
     insertLength(metadataFile, fileSize);
     insertName(metadataFile, fileName, fileNameSize);
-//    insertPieceLength();TODO
-//    insertPieces();
+
+    char* firstPiecePath = getPathOfFirstPiece(fileName, fileNameSize);
+    long long firstPieceSizeInBytes = getSharedFileSizeInBytes(firstPiecePath);
+    insertPieceLength(metadataFile, firstPieceSizeInBytes);
+
+//    insertPieces();TODO
     fprintf(metadataFile, "%s", "e");
 }
 
@@ -140,7 +165,7 @@ void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trac
 
     unsigned char *hash = getMD5Hash(sharedPath);
 
-    printHash(hash);
+//    printHash(hash);
 
 
 
