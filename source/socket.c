@@ -1,12 +1,20 @@
 #include "../include/socket.h"
 
 
-int createSocket() {
+int createSocket(int port, struct in6_addr clientAddress) {
     int socketDescriptor = socket(AF_INET6, SOCK_STREAM, 0);
     if (socketDescriptor == -1) {
         puts("Could not create socket\n");
     }
     puts("Socket created\n");
+    struct sockaddr_in6 address;
+    address.sin6_family = AF_INET;
+    address.sin6_addr = clientAddress;
+    address.sin6_port = htons(port);
+    if (bind(socketDescriptor, (struct sockaddr *) &address, sizeof(address)) < 0) {
+        perror("Bind failed");
+        return -1;
+    }
     return socketDescriptor;
 }
 
@@ -21,7 +29,7 @@ void listenToConnect(int socketDescriptor) {
     puts("Listening started\n");
 }
 
-int acceptConnection(int socketDescriptor, struct sockaddr_in client) {
+int acceptConnection(int socketDescriptor, struct sockaddr_in6 client) {
     int c = sizeof(struct sockaddr_in);
 
     int client_sock = accept(socketDescriptor, (struct sockaddr *) &client, (socklen_t *) &c);
@@ -40,7 +48,7 @@ int closeConnection(int socketDescriptor) {
 }
 
 
-int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server) {
+int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in6 server) {
     if (connect(socketDescriptor, (struct sockaddr *) &server, sizeof(server)) < 0) {
         perror("Connect failed. Error\n");
         return 1;

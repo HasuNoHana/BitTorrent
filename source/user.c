@@ -1,6 +1,6 @@
 #include "../include/user.h"
 
-int sendFileToDifferentUser(int userSocketId, char *data, int dataSize, bool trackerOperation) {
+int sendDataToDifferentUser(int userSocketId, char *data, int dataSize, bool trackerOperation) {
     int sendDataNumber = 0;
     int send = 0;
 

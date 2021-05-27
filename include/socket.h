@@ -10,17 +10,17 @@
 #include<unistd.h>
 #include <malloc.h>
 
-int createSocket();
+int createSocket(int port, struct in6_addr clientAddress);
 
 void closeSocket(int socketDescriptor);
 
 void listenToConnect(int socketDescriptor);
 
-int acceptConnection(int socketDescriptor, struct sockaddr_in client);
+int acceptConnection(int socketDescriptor, struct sockaddr_in6 client);
 
 int closeConnection(int socketDescriptor);
 
-int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in server);
+int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in6 server);
 
 int sendData(int socketDescriptor, char *buf, int dataSize);
 
