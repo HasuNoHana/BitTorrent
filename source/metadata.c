@@ -8,6 +8,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <openssl/md5.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 char* SHARED_FILE_EXTENSION = ".txt";
@@ -106,25 +110,6 @@ void insertPieceLength(FILE *metadataFile, long long int pieceLength) {
     fprintf(metadataFile, "%s", "e");
 }
 
-void insertPieces(FILE *metadataFile, char *fileName) {
-    fprintf(metadataFile, "%s", "6:piecesl");
-    //TODO
-    fprintf(metadataFile, "%s", "e");
-}
-
-void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
-    fprintf(metadataFile, "%s", "4:infod");
-    insertLength(metadataFile, fileSize);
-    insertName(metadataFile, fileName, fileNameSize);
-
-    char* firstPiecePath = getPathOfFirstPiece(fileName, fileNameSize);
-    long long firstPieceSizeInBytes = getSharedFileSizeInBytes(firstPiecePath);
-    insertPieceLength(metadataFile, firstPieceSizeInBytes);
-
-    insertPieces(metadataFile, fileName);
-    fprintf(metadataFile, "%s", "e");
-}
-
 const char *hexString(unsigned char *data, size_t length, char *buffer) {
     const char *hexDigits = "0123456789abcdef";
     char *dest = buffer;
@@ -162,6 +147,83 @@ void printHash(unsigned char *hash){
     for(int i = 0; i < MD5_DIGEST_LENGTH; i++) printf("%02x", hash[i]);
 }
 
+int countNomberOfFilesinDir(char *dirPath) {
+    int file_count = 0;
+    DIR * dirp;
+    struct dirent * entry;
+
+    dirp = opendir("../sharedFiles/test"); /* There should be error handling after this */
+    while ((entry = readdir(dirp)) != NULL) {
+        if (entry->d_type == DT_REG) { /* If the entry is a regular file */
+            file_count++;
+        }
+    }
+    closedir(dirp);
+    return file_count;
+}
+
+char *getPathOfSharedDir(char *fileName, int fileNameSize) {
+    //size = folderName size + sharedFileName size + extension size + 1
+    int s = 15+fileNameSize+SHARED_FILE_EXTENSION_LENGTH+1;
+    char *path = malloc (sizeof (char) * s);
+    for(int i=0; i<s; i++){
+        path[i]=(char)0;
+    }
+    char folder[] = "../sharedFiles/";
+    strcat(path, folder);
+    strcat(path, fileName);
+    return path;
+}
+
+char *getFilePath(char *dirPath, char* originalFileName, int originalFileNamelength, int fileName) {
+    char *stringFileName[fileName];
+    sprintf(stringFileName, "%d", fileName);
+
+    //size = folderName size + originalFileNamelength size + sharedFileName size + extension size + "/" character + 1
+    int s = 15+originalFileNamelength+fileName+SHARED_FILE_EXTENSION_LENGTH+1+1;
+    char *path = malloc (sizeof (char) * s);
+    for(int i=0; i<s; i++){
+        path[i]=(char)0;
+    }
+    char folder[] = "../sharedFiles/";
+    strcat(path, folder);
+    strcat(path, originalFileName);
+    strcat(path, "/");
+    strcat(path, stringFileName);
+    strcat(path, SHARED_FILE_EXTENSION);
+
+    return path;
+}
+
+void insertPieces(FILE *metadataFile, char *fileName, int fileNameSize) {
+    fprintf(metadataFile, "%s", "6:piecesl");
+    char *dirPath = getPathOfSharedDir(fileName, fileNameSize);
+    int numberOfFiles = countNomberOfFilesinDir(dirPath);
+
+    for(int i = 1; i <= numberOfFiles; i++){
+        char* iFilePath = getFilePath(dirPath, fileName, fileNameSize, i);
+        unsigned char *hash = getMD5Hash(iFilePath);
+
+        fprintf(metadataFile, "%s", "32:");
+        for(int j = 0; j < MD5_DIGEST_LENGTH; j++) fprintf(metadataFile, "%02x", hash[j]);//write hash to file in format 02x
+    }
+
+    fprintf(metadataFile, "%s", "e");
+}
+
+void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
+    fprintf(metadataFile, "%s", "4:infod");
+    insertLength(metadataFile, fileSize);
+    insertName(metadataFile, fileName, fileNameSize);
+
+    char* firstPiecePath = getPathOfFirstPiece(fileName, fileNameSize);
+    long long firstPieceSizeInBytes = getSharedFileSizeInBytes(firstPiecePath);
+    insertPieceLength(metadataFile, firstPieceSizeInBytes);
+
+    insertPieces(metadataFile, fileName, fileNameSize);
+    fprintf(metadataFile, "%s", "e");
+}
+
 void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trackerUrl, int trackerUrlSize ) {
 
     char *sharedPath = getPathOfSharedFile(sharedFileName, sharedFileNameSize);
@@ -172,6 +234,8 @@ void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trac
     unsigned char *hash = getMD5Hash(sharedPath);
 
 //    printHash(hash);
+
+
 
 
 
