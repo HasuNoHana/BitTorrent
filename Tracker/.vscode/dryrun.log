@@ -1,9 +1,0 @@
-make -f "/home/marcelina/Pobrane/Tracker/makefile" --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/home/marcelina/Pobrane/Tracker'
-make: Leaving directory '/home/marcelina/Pobrane/Tracker'
- 
-make: /home/marcelina/Pobrane/Tracker/makefile: No such file or directory
-make: *** No rule to make target '/home/marcelina/Pobrane/Tracker/makefile'.
-make: Failed to remake makefile '/home/marcelina/Pobrane/Tracker/makefile'.
-make: *** No targets specified and no makefile found.  Stop.
- 
