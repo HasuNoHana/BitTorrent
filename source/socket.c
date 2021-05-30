@@ -1,31 +1,52 @@
 #include "../include/socket.h"
+#include <stdlib.h>
+#include <arpa/inet.h>
 
 
 int createSocket(int port, struct in6_addr clientAddress) {
     int socketDescriptor = socket(AF_INET6, SOCK_STREAM, 0);
     if (socketDescriptor == -1) {
         puts("Could not create socket\n");
+        exit(1);
     }
     puts("Socket created\n");
     struct sockaddr_in6 address;
-    address.sin6_family = AF_INET;
+    address.sin6_family = AF_INET6;
     address.sin6_addr = clientAddress;
     address.sin6_port = htons(port);
     if (bind(socketDescriptor, (struct sockaddr *) &address, sizeof(address)) < 0) {
         perror("Bind failed");
-        return -1;
+        exit(1);
     }
+
+    int opt = 1;    //enable flags
+
+    if (setsockopt(socketDescriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+    {
+        perror("Setsockopt faild");
+        exit(1);
+    }
+
     return socketDescriptor;
 }
 
 void closeSocket(int socketDescriptor) {
-    close(socketDescriptor);
-    puts("Socket closed\n");
+    if(close(socketDescriptor) != 0)
+    {
+        perror("Could not close socket");
+        exit(1);
+    }
+    else
+        puts("Socket closed\n");
 }
 
 void listenToConnect(int socketDescriptor) {
     //liczba requestów do ewentualnej zmiany
-    listen(socketDescriptor, 5);
+    if(listen(socketDescriptor, 5) != 0)
+    {
+        perror("Listening failed");
+        exit(1);
+    }
     puts("Listening started\n");
 }
 
@@ -34,8 +55,8 @@ int acceptConnection(int socketDescriptor, struct sockaddr_in6 client) {
 
     int client_sock = accept(socketDescriptor, (struct sockaddr *) &client, (socklen_t *) &c);
     if (client_sock < 0) {
-        perror("accept failed\n");
-        return 1;
+        perror("accept failed");
+        exit(1);
     }
     puts("Connection accepted\n");
     return 0;
@@ -49,9 +70,14 @@ int closeConnection(int socketDescriptor) {
 
 
 int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in6 server) {
+
+    char buffer[64];
+    inet_ntop(AF_INET6, &server.sin6_addr.s6_addr, buffer, sizeof(server));
+    printf("Trying to connect to IP %s at port %d...\n", buffer, ntohs(server.sin6_port));
+    
     if (connect(socketDescriptor, (struct sockaddr *) &server, sizeof(server)) < 0) {
-        perror("Connect failed. Error\n");
-        return 1;
+        perror("Connect failed");
+        exit(1);
     }
     puts("Connected\n");
     return 0;
