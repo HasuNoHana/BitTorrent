@@ -51,8 +51,14 @@ int readmsg(int ID, char *buffer) {
     return 0;
 }
 
-void *super_createListenSocket(struct in6_addr clientAddress)
+void *super_createListenSocket(void *clientAddr)
 {
+    struct in6_addr clientAddress = *(struct in6_addr*)clientAddr;
+
+    char buffer[64];
+    inet_ntop(AF_INET6, &clientAddress.s6_addr, buffer, sizeof(clientAddress));
+    printf("IP passed to ListenSocket: %s\n", buffer);
+
     while(1)
     {
         struct sockaddr_in6 address;
@@ -77,8 +83,10 @@ void *super_createListenSocket(struct in6_addr clientAddress)
     }
 }
 
-void *super_createConnectSocket(struct in6_addr clientAddress)
+void *super_createConnectSocket(void *clientAddr)
 {
+
+    struct in6_addr clientAddress = *(struct in6_addr*)clientAddr;
 
     int numberOfQueueToRead = 1;
     int numberOfQueueToWrite = 2;
@@ -87,7 +95,7 @@ void *super_createConnectSocket(struct in6_addr clientAddress)
 
     struct sockaddr_in6 tracker;
     tracker.sin6_addr = clientAddress;     //TODO fix: clientAddress -> trackerAddress
-    tracker.sin6_port = 8080;
+    tracker.sin6_port = htons(3001);              //TODO fix: 3001 -> 8080
     tracker.sin6_family = AF_INET6;
 
     while(1)
@@ -153,9 +161,8 @@ void *super_createConnectSocket(struct in6_addr clientAddress)
     }
 }
 
-void *socketSupervisorModule(struct in6_addr clientAddress)
+void *socketSupervisorModule(void *clientAddress)
 {
-
     pthread_t listensocket_thread_id;
     pthread_t connectsocket_thread_id;
 
@@ -166,11 +173,12 @@ void *socketSupervisorModule(struct in6_addr clientAddress)
     //do nasłuchiwania połączeń
     if(mode == 0)
     {
-        if(pthread_create(&listensocket_thread_id, NULL, super_createListenSocket, (void *)&clientAddress))
+        if(pthread_create(&listensocket_thread_id, NULL, super_createListenSocket, clientAddress))
         {
             printf("Failed to create ListenSocket\n");
             exit(1);
         }
+        pthread_join(listensocket_thread_id, NULL);
     }
 
     //do obsługi kolejki i nawiązywania połączeń z innymi peerami
@@ -182,11 +190,12 @@ void *socketSupervisorModule(struct in6_addr clientAddress)
         args.trackerAddress = trackerAddress;
         */
 
-        if(pthread_create(&connectsocket_thread_id, NULL, super_createConnectSocket, (void *)&clientAddress))
+        if(pthread_create(&connectsocket_thread_id, NULL, super_createConnectSocket, clientAddress))
         {
             printf("Failed to create ConnectSocket\n");
             exit(1);
         }
+        pthread_join(connectsocket_thread_id, NULL);
     }
 }
 
@@ -204,13 +213,19 @@ int main()
     pthread_t supervisor_thread_id;
     struct sockaddr_in6 clientAddress;
 
-    inet_pton(AF_INET6, "127.0.0.1", &(clientAddress.sin6_addr));
+    inet_pton(AF_INET6, "::1", &(clientAddress));
+
+    char buffer[64];
+    inet_ntop(AF_INET6, &clientAddress, buffer, sizeof(clientAddress));
+    printf("IP parsed in main: %s\n", buffer);
 
     if(pthread_create(&supervisor_thread_id, NULL, socketSupervisorModule, (void *)&clientAddress))
     {
         printf("Failed to create ConnectSocket\n");
         exit(1);
     }
+
+    pthread_join(supervisor_thread_id, NULL);
 
     return 0;
 }
