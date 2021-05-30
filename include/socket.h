@@ -24,6 +24,7 @@ int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in6 server);
 
 int sendData(int socketDescriptor, char *buf, int dataSize);
 
-char *receiveData(int socketDescriptor, int dataSize);
+int receiveData(int socketDescriptor, int dataSize, char* data);
 
 #endif
+

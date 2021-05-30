@@ -38,15 +38,15 @@ int sendDataToDifferentUser(int userSocketId, char *data, int dataSize, bool tra
             return -1;
         }
     }
-
     // wszystko się udało, zwracamy 0
     return 0;
 }
 
-char *getDataFromDifferentUser(int userSocketId, bool trackerOperation) {
+int getDataFromDifferentUser(int userSocketId, char resultData[1024], bool trackerOperation) {
     int socketReady;
     fd_set set;
     struct timeval timeout;
+    int sendDataNumber = 0;
 
     FD_ZERO(&set);
     FD_SET(userSocketId, &set);
@@ -59,18 +59,29 @@ char *getDataFromDifferentUser(int userSocketId, bool trackerOperation) {
         timeout.tv_sec = 30;
         timeout.tv_usec = 0;
     }
-    socketReady = select(userSocketId + 1, &set, NULL, NULL, &timeout);
-    if (socketReady == 1) {
-        char *data = receiveData(userSocketId, 1024);
-        if(data == 0){
-            //ostatnia "paczka" zamykamy połączenie
+
+    while (sendDataNumber < 1024) {
+        socketReady = select(userSocketId + 1, &set, NULL, NULL, &timeout);
+        if (socketReady == 1) {
+            char tmpBuffer[1024];
+            int numberOfData = receiveData(userSocketId, 1024 - sendDataNumber, tmpBuffer);
+            if (numberOfData == 0) {
+                //ostatnia "paczka" zamykamy połączenie
+                closeConnection(userSocketId);
+                return 0;
+            } else {
+                for (int i = 0; i < numberOfData; ++i) {
+                    resultData[sendDataNumber] = tmpBuffer[i];
+                    ++sendDataNumber;
+                }
+            }
+        } else {
+            //jeśli poleciał timeout zamykamy połączenie i zwracamy -1
             closeConnection(userSocketId);
+            return -1;
         }
-        return data;
-    } else {
-        //jeśli poleciał timeout zamykamy połączenie i zwracamy -1
-        closeConnection(userSocketId);
-        return NULL;
     }
+    return 1;
+
 }
 
