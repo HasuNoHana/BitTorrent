@@ -153,8 +153,9 @@ void *queueSection(void *clientAddr) {
 
 
     while (1) {
-        char *buffer;
-        if (readmsg(numberOfQueueToRead, buffer) == 0) {
+        char buffer[64];
+        if (readmsg(numberOfQueueToRead, buffer) == 0)
+        {
             char option = *buffer;
 
             //koniec słuchania, zamykamy wszystko
@@ -243,11 +244,11 @@ void *queueSection(void *clientAddr) {
 
                 struct sockaddr_in6 client;
                 inet_pton(AF_INET6, buffer, &(client.sin6_addr));
-                client.sin6_port = 3000;
+                client.sin6_port = htons(3001);
                 client.sin6_family = AF_INET6;
 
                 if (connectToDifferentSocket(newSocketId, client) == 0) {
-                    char *fileName;
+                    char fileName[64];
                     int readMsg = readmsg(numberOfQueueToRead, fileName);
                     if (readMsg != 0) {
                         break;
@@ -342,10 +343,12 @@ int main() {
         }
     }
     printf("Please input tracker address: ");
-    char *tracker = NULL;
+    char tracker[40];
     scanf("%s", tracker);
-    inet_ntop(AF_INET6, &trackerAddress, tracker, sizeof(trackerAddress));
-    
+    inet_pton(AF_INET6, tracker, &(trackerAddress));
+
+    printf("Tracker address parsed successfully.\n");
+
     pthread_t supervisor_thread_id;
     struct sockaddr_in6 clientAddress;
 
@@ -354,6 +357,14 @@ int main() {
     char buffer[64];
     inet_ntop(AF_INET6, &clientAddress, buffer, sizeof(clientAddress));
     printf("IP parsed in main: %s\n", buffer);
+
+//TEST//
+
+    writemsg(1, "4");
+    writemsg(1, "::1");
+    writemsg(1, "test.txt");
+
+//!TEST//
 
     if (pthread_create(&supervisor_thread_id, NULL, socketSupervisorModule, (void *) &clientAddress)) {
         printf("Failed to create ConnectSocket\n");
@@ -364,4 +375,3 @@ int main() {
 
     return 0;
 }
-
