@@ -73,19 +73,21 @@ void insertName(FILE *metadataFile, char *fileName, long long int fileNameSize) 
     fprintf(metadataFile, "%lld", fileNameSize);
     fprintf(metadataFile, "%s", ":");
     fprintf(metadataFile, "%s", fileName);
+    fprintf(metadataFile, "%s", "\n");
 }
 
 void insertLength(FILE *metadataFile, long long int fileSize) {
     fprintf(metadataFile, "%s", "6:lengthi");
     fprintf(metadataFile, "%lld", fileSize);
-    fprintf(metadataFile, "%s", "e");
+    fprintf(metadataFile, "%s", "e\n");
 }
 
 void insertAnnounance(FILE *metadataFile, char *url, int size) {
-    fprintf(metadataFile, "%s", "8:announce");
+    fprintf(metadataFile, "%s", "8:announce\n");
     fprintf(metadataFile, "%d", size);
     fprintf(metadataFile, "%s", ":");
     fprintf(metadataFile, "%s", url);
+    fprintf(metadataFile, "%s", "\n");
 }
 
 char* getPathOfFirstPiece(char *sharedFileName, int fileNameSize) {
@@ -107,7 +109,7 @@ char* getPathOfFirstPiece(char *sharedFileName, int fileNameSize) {
 void insertPieceLength(FILE *metadataFile, long long int pieceLength) {
     fprintf(metadataFile, "%s", "12:piece lengthi");
     fprintf(metadataFile, "%d", pieceLength);
-    fprintf(metadataFile, "%s", "e");
+    fprintf(metadataFile, "%s", "e\n");
 }
 
 const char *hexString(unsigned char *data, size_t length, char *buffer) {
@@ -196,7 +198,7 @@ char *getFilePath(char *dirPath, char* originalFileName, int originalFileNamelen
 }
 
 void insertPieces(FILE *metadataFile, char *fileName, int fileNameSize) {
-    fprintf(metadataFile, "%s", "6:piecesl");
+    fprintf(metadataFile, "%s", "6:piecesl\n");
     char *dirPath = getPathOfSharedDir(fileName, fileNameSize);
     int numberOfFiles = countNomberOfFilesinDir(dirPath);
 
@@ -205,14 +207,16 @@ void insertPieces(FILE *metadataFile, char *fileName, int fileNameSize) {
         unsigned char *hash = getMD5Hash(iFilePath);
 
         fprintf(metadataFile, "%s", "32:");
-        for(int j = 0; j < MD5_DIGEST_LENGTH; j++) fprintf(metadataFile, "%02x", hash[j]);//write hash to file in format 02x
+        for(int j = 0; j < MD5_DIGEST_LENGTH; j++)
+            fprintf(metadataFile, "%02x", hash[j]);//write hash to file in format 02x
+        fprintf(metadataFile, "%s", "\n");
     }
 
     fprintf(metadataFile, "%s", "e");
 }
 
 void insertInfo(FILE *metadataFile, char *fileName, int fileNameSize, long long int fileSize) {
-    fprintf(metadataFile, "%s", "4:infod");
+    fprintf(metadataFile, "%s", "4:infod\n");
     insertLength(metadataFile, fileSize);
     insertName(metadataFile, fileName, fileNameSize);
 
