@@ -46,7 +46,7 @@ void listenToConnect(int socketDescriptor) {
 int acceptConnection(int socketDescriptor, struct sockaddr_in6 client) {
     int c = sizeof(struct sockaddr_in);
 
-    int client_sock = accept(socketDescriptor, (struct sockaddr *) &client, (socklen_t * ) & c);
+    int client_sock = accept(socketDescriptor, (struct sockaddr *)&client, (socklen_t *)&c);
     if (client_sock < 0) {
         perror("Accept failed.\n");
         exit(1);
