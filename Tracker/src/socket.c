@@ -99,7 +99,7 @@ void *serveRequest(void *arguments)
 
 char* receiveFile(int client_socket, char* clientIP)
 {
-    int n;
+    int n = 1;
     char *filepath = malloc(12+IP_MAX);
     memset(filepath, 0, 12+IP_MAX);
 
@@ -107,18 +107,17 @@ char* receiveFile(int client_socket, char* clientIP)
     strcat(filepath, clientIP);
     strcat(filepath, ".txt");
         
-//    FILE *fp = getFilePointer(1, filepath);
+    FILE *fp = getFilePointer(1, filepath);
 
-    char buffer[DATASIZE];
+    char* buffer = malloc(DATASIZE);
 
-    while (1){
-        n = read(client_socket, buffer, DATASIZE);
-        if (n <= 0) break;
-        printf( "%s", buffer);
-//        fprintf(fp, "%s", buffer);
+    while (n>0){
+        n = recv(client_socket, buffer, DATASIZE, 0);
+        printf( "%s\n", buffer);
+        fprintf(fp, "%s", buffer);
         bzero(buffer, DATASIZE);
     }
-
+    fclose(fp);
     return filepath;
 }
 

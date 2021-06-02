@@ -194,11 +194,12 @@ void *queueSection(void *clientAddr) {
                             printf("FILE NAME %s", fileName);
                             break;
                         }
-
+                        //MARCELINA - tu zmienilam bo wysylalas buffer zamiast sendData
                         char sendData[1024];
                         while(fgets(sendData, 1024, file) != NULL) {
-                            printf("%s", sendData);
-                            sendDataToDifferentUser(newSocketId, buffer, size, true);
+                            printf("HERE: %s", sendData);
+
+                            sendDataToDifferentUser(newSocketId, sendData, size, true);
                             bzero(sendData, 1024);
                         }
                         fclose(file);

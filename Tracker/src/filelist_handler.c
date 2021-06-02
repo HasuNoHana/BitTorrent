@@ -127,6 +127,7 @@ int accessFilesList(int mode, char* filename, char* filepath, char* clientIP)
         size_t line_buf_size = 0;
         ssize_t line;
 
+        /*
         while (line = getline(&line_buf, &line_buf_size, fp) > 0 && (strncmp(line_buf, "6:pieces", 6)!=0))
             if (strncmp(line_buf, "4:name", 6)==0) filename = getFilename(line_buf);
 
@@ -139,11 +140,7 @@ int accessFilesList(int mode, char* filename, char* filepath, char* clientIP)
         else
             while (line = getline(&line_buf, &line_buf_size, fp) > 0 && (strncmp(line_buf, "e", 1)!=0)) 
                 insertPiece(filename, line_buf, clientIP, 1, 1);
-        
-        line_buf = NULL;
-        filename = NULL;
-        free(line_buf);
-        free(filename);
+        */
         fclose(fp);
     }
     else if(mode == 2 ){   

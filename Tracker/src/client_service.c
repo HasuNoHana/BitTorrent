@@ -6,8 +6,6 @@ void addFile(int client_socket, char* clientIP)
     
     //Nie mam pojecia czy ta funkcja dziala:
     char* filepath = receiveFile(client_socket, clientIP);
-    
-//    char* filepath = "torrent.txt";
 
     int success = accessFilesList(1, NULL, filepath, clientIP);
 

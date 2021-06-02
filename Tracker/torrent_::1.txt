@@ -4,9 +4,7 @@ d8:announce
 4:name4:test
 12:piecelengthi4e
 6:piecesl32:
-32:568d8e07bbe5575518d5005e559743c3
-32:645ec79f22bec5efe970061d395cf7c4
+:568d8e07bbe5575518d5005e559743c3
+:645ec79f22bec5efe970061d395cf7c4
 e
 e
-
-
