@@ -47,37 +47,6 @@ int readmsg(int ID, char *buffer) {
     return 0;
 }
 
-long readFile(char filePath[40], char *buffer) {
-    FILE *fp;
-    long lSize;
-
-    fp = fopen(filePath, "rb");
-    if (!fp) {
-        perror(filePath);
-        exit(1);
-    }
-
-    fseek(fp, 0L, SEEK_END);
-    lSize = ftell(fp);
-    rewind(fp);
-
-    buffer = calloc(1, lSize + 1);
-    if (!buffer) {
-        fclose(fp);
-        fputs("memory alloc fails", stderr);
-        exit(1);
-    }
-
-    if (1 != fread(buffer, lSize, 1, fp)) {
-        fclose(fp);
-        free(buffer);
-        fputs("entire read fails", stderr);
-        exit(1);
-    }
-    fclose(fp);
-    return lSize;
-}
-
 
 void *listenSection(void *userAddr) {
     struct in6_addr userAddress = *(struct in6_addr *) userAddr;
@@ -87,8 +56,7 @@ void *listenSection(void *userAddr) {
     printf("IP passed to ListenSocket: %s\n", buffer);
 
     while (1) {
-        int opt = 1;
-        char fileName[1024];
+        char fileName[64];
 
         int socketToListen = createSocket(3001, userAddress);
         listenToConnect(socketToListen);
@@ -105,33 +73,22 @@ void *listenSection(void *userAddr) {
 
             getDataFromDifferentUser(socketToListen, fileName, true);
 
-            //TODO: nie jestem pewna czy tu powinnam tego szukać (do dopytania u Zu)
-            char folder[] = "../sharedFiles/";
-
-            //odczytujemy nazwę pliku
-            char name[40];
-            int count = 0;
-            char c;
-            while ((c = *buffer) != '\n'){
-                name[count] = c;
-                count++;
+            printf("%s\n", fileName);
+            FILE *file = fopen(fileName, "r");
+            if (file == NULL) {
+                printf("Open file %s  to read failed!", fileName);
+                break;
             }
-            char finalName[count];
-            for(int i = 0; i< count; ++i){
-                finalName[0] = name [0];
-            }
-            strcat(finalName, folder);
 
-            char *buffer;
-            long fileSize = readFile(folder, buffer);
-            sendDataToDifferentUser(socketToListen, buffer, fileSize, false);
-
-            //ponowne użycie socketu
-            if (setsockopt(socketToListen, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-                           &opt, sizeof(opt))) {
-                perror("setsockopt");
-                exit(EXIT_FAILURE);
+            char sendData[1024];
+            while (fgets(sendData, 1024, file) != NULL) {
+                printf("%s\n", sendData);
+                sendDataToDifferentUser(socketToListen, sendData, 1024, true);
+                bzero(sendData, 1024);
             }
+            fclose(file);
+            printf("File %s sent!\n", fileName);
+            closeSocket(socketToListen);
         }
     }
 }
@@ -167,9 +124,14 @@ void *queueSection(void *clientAddr) {
                 //tworzymy nowy socket i bindujemy mu nasz adres
                 newSocketId = createSocket(port, clientAddress);
                 connectToDifferentSocket(newSocketId, tracker);
+
+                //wysylamy informację do trackera co chcemy zrobić
                 sendDataToDifferentUser(newSocketId, &option, 1, true);
                 char resultData[1024];
+
+                //tracker nam odpowiada
                 getDataFromDifferentUser(newSocketId, resultData, true);
+
                 if (option == '1') {
                     if (resultData[0] != '0') {
                         //rozmiar pliku torrent
@@ -182,29 +144,26 @@ void *queueSection(void *clientAddr) {
                         //liczymy rozmiar pliku
 
                         int size = atoi(buffer);
-                        printf("size %d\n ", size);
                         char fileName[64];
                         readMsg = readmsg(numberOfQueueToRead, fileName);
                         if (readMsg != 0) {
                             break;
                         }
 
-                        file = fopen(fileName, "rw");
+                        file = fopen(fileName, "r");
                         if (file == NULL) {
-                            printf("FILE NAME %s", fileName);
+                            printf("Open file %s failed!", fileName);
                             break;
                         }
-                        //MARCELINA - tu zmienilam bo wysylalas buffer zamiast sendData
+
                         char sendData[1024];
                         while(fgets(sendData, 1024, file) != NULL) {
-                            printf("HERE: %s", sendData);
 
                             sendDataToDifferentUser(newSocketId, sendData, size, true);
                             bzero(sendData, 1024);
                         }
                         fclose(file);
-//                        sendDataToDifferentUser(newSocketId, buffer, fileSize, true);
-
+                        printf("Torrent file sent!\n");
                     }
                     closeSocket(newSocketId);
                 } else if (option == '3') {
@@ -280,38 +239,33 @@ void *queueSection(void *clientAddr) {
                     if (readMsg != 0) {
                         break;
                     }
+                    printf("%s\n", fileName);
                     //send file name
-                    sendDataToDifferentUser(newSocketId, fileName, MSG_LENGTH - 1, true);
+                    sendDataToDifferentUser(newSocketId, "sharedFiles/torrent.txt", MSG_LENGTH, true);
+
+                    FILE *file;
+
+                    file = fopen(fileName, "w");
+                    if (file == NULL) {
+                        printf("Open file %s to write failed!", fileName);
+                        break;
+                    }
+
                     char resultData[1024];
                     int sendResult = 1;
-                    FILE *file;
-                    //TODO: nie jestem pewna czy tu powinnam tego szukać (do dopytania u Zu)
-                    char folder[] = "../sharedFiles/";
-                    //odczytujemy nazwę pliku
-                    char name[40];
-                    int count = 0;
-                    char c;
-                    while ((c = *fileName) != '\n'){
-                        name[count] = c;
-                        count++;
-                    }
-                    char finalName[count];
-                    for(int i = 0; i< count; ++i){
-                        finalName[0] = name [0];
-                    }
-                    strcat(finalName, folder);
 
-                    file = fopen(folder, "w");
                     //dopoki nie koniec pliku to piszemy do kolejki
                     while (sendResult == 1) {
                         sendResult = getDataFromDifferentUser(newSocketId, resultData, true);
                         //jesli -1 to poleciał timeout
                         if (sendResult != -1) {
+                            printf("%s", resultData);
                             fprintf(file, "%s", resultData);
                         } else {
                             break;
                         }
                     }
+                    fclose(file);
                     //zamykamy połączenie z peerem
                     closeSocket(newSocketId);
 
@@ -319,9 +273,9 @@ void *queueSection(void *clientAddr) {
                     newSocketId = createSocket(port, clientAddress);
                     //jeśli połaczenie do trackera się powiodło
                     if (connectToDifferentSocket(newSocketId, tracker) == 0) {
-                        sendDataToDifferentUser(newSocketId, "1", 1, true);
+                        sendDataToDifferentUser(newSocketId, "4", 1, true);
                         getDataFromDifferentUser(newSocketId, resultData, true);
-                        if (resultData[0] == 'O' && resultData[1] == 'K') {
+                        if (resultData[0] != '0') {
                             sendDataToDifferentUser(newSocketId, fileName, MSG_LENGTH - 1, true);
                         }
                     }
@@ -391,8 +345,8 @@ int main() {
 //    writemsg(1, "plik4");
 //    writemsg(1, "2");
 //    writemsg(1, "plik2");
-    writemsg(1, "1");
-    writemsg(1, "163");
+    writemsg(1, "4");
+    writemsg(1, "::1");
     writemsg(1, "sharedFiles/torrent.txt");
     writemsg(1, "0");
 

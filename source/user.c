@@ -24,13 +24,8 @@ int getDataFromDifferentUser(int userSocketId, char resultData[1024], bool track
     int result = 1;
     while (dataNumber < 1024) {
         char tmpBuffer[1024];
-//        memset(tmpBuffer, '\0', 1024);
         int numberOfData = receiveData(userSocketId, 1024 - dataNumber, tmpBuffer);
-//        sendData(userSocketId, "1", 1);
-//        puts(" data.\n");
-//        for(int i = 0; i <1024 ; ++i){
-//            tmpBuffer[i]= 0;
-//        }
+
         if (numberOfData == 0) {
             //ostatnia "paczka" zamykamy połączenie
             closeConnection(userSocketId);
@@ -47,10 +42,7 @@ int getDataFromDifferentUser(int userSocketId, char resultData[1024], bool track
                 break;
             }
         }
-//        printf("%s", resultData);
     }
-//    puts("aaaaa of data.\n");
-//    printf("%s", resultData);
     return result;
 
 }
