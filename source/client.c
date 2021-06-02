@@ -1,4 +1,6 @@
 #include "../include/client.h"
+struct in6_addr trackerAddress;
+
 void *listenSection(void *userAddr) {
     struct in6_addr userAddress = *(struct in6_addr *) userAddr;
 

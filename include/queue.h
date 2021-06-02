@@ -20,5 +20,6 @@ extern int msg_write[MODULE_COUNT];
 int writemsg(int ID, char *message);
 int readmsg(int ID, char *buffer);
 int prepareQueueMutexes();
+int destroyQueueMutexes();
 
 #endif

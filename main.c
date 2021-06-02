@@ -10,16 +10,10 @@
 #define MSG_ARRAY_SIZE 32
 #define MODULE_COUNT 4
 
-pthread_mutex_t writemsg_lock[MODULE_COUNT];
 
 int main() {
     prepareQueueMutexes();
-    for (int i = 0; i < MODULE_COUNT; i++) {
-        if (pthread_mutex_init(writemsg_lock + i, NULL) != 0) {
-            printf("\n mutex #%i init failed\n", i);
-            return 1;
-        }
-    }
+
     printf("Please input tracker address: ");
     char tracker[40];
     scanf("%s", tracker);
@@ -61,6 +55,7 @@ int main() {
     }
 
     pthread_join(supervisor_thread_id, NULL);
+    destroyQueueMutexes();
 
     return 0;
 }

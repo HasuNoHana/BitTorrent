@@ -49,10 +49,10 @@ int acceptConnection(int socketDescriptor, struct sockaddr_in6 client) {
     int client_sock = accept(socketDescriptor, (struct sockaddr *)&client, (socklen_t *)&c);
     if (client_sock < 0) {
         perror("Accept failed.\n");
-        exit(1);
+        return -1;
     }
     puts("Connection accepted.\n");
-    return 0;
+    return client_sock;
 }
 
 int closeConnection(int socketDescriptor) {
