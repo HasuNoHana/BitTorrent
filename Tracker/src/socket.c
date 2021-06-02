@@ -53,7 +53,7 @@ void *serveRequest(void *arguments)
 
     if (buffer_in[0] == '1'){   
         buffer_out = "Hi, want to add new file? Send me torrent file.\n";
-        write(client_socket, buffer_out, 48);
+        write(client_socket, buffer_out, 49);
 
         memset(buffer_in, 0, FILEN_LENGTH);
         
@@ -107,15 +107,15 @@ char* receiveFile(int client_socket, char* clientIP)
     strcat(filepath, clientIP);
     strcat(filepath, ".txt");
         
-    FILE *fp = getFilePointer(1, filepath);
+//    FILE *fp = getFilePointer(1, filepath);
 
     char buffer[DATASIZE];
 
     while (1){
-        n = recv(client_socket, buffer, DATASIZE, 0);
+        n = read(client_socket, buffer, DATASIZE);
         if (n <= 0) break;
-
-        fprintf(fp, "%s", buffer);
+        printf( "%s", buffer);
+//        fprintf(fp, "%s", buffer);
         bzero(buffer, DATASIZE);
     }
 
@@ -123,13 +123,10 @@ char* receiveFile(int client_socket, char* clientIP)
 }
 
 void sendFile(FILE *fp, int client_socket){
-    int n;
     char* data = malloc(DATASIZE);
-
     while(fgets(data, DATASIZE, fp) != NULL) {
-        printf("%s", data);
-
-        if (send(client_socket, data, sizeof(DATASIZE), 0) == -1){
+        int writeNumber = send(client_socket, data, DATASIZE, 0);
+        if (writeNumber == -1){
             perror("[-] Error in sending file.");
             exit(1);
         }

@@ -5,9 +5,9 @@ void addFile(int client_socket, char* clientIP)
     char* buffer_out = malloc(70);
     
     //Nie mam pojecia czy ta funkcja dziala:
-    //char* filepath = receiveFile(client_socket, clientIP);
+    char* filepath = receiveFile(client_socket, clientIP);
     
-    char* filepath = "torrent.txt";
+//    char* filepath = "torrent.txt";
 
     int success = accessFilesList(1, NULL, filepath, clientIP);
 
@@ -48,15 +48,12 @@ void download(int client_socket, char* clientIP, char* filename)
     int success = accessFilesList(2, trimmed_filename, filepath, clientIP);
 
     if (success == 0){
-        buffer_out = "I don't have this file\n";
-        write(client_socket, buffer_out, 23);
+        buffer_out = "-";
+        write(client_socket, buffer_out, 1);
 
         close(client_socket);
     }
     if (success == 1){
-        buffer_out = "Seeder's file is prepared, sending will start after this message.\n";
-        write(client_socket, buffer_out, 67);
-
         FILE* fp = getFilePointer(2, filepath);   
         
         sendFile(fp, client_socket);

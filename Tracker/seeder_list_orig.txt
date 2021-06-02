@@ -5,10 +5,12 @@
 :alibaba
 7:seeds:
 a:b:c:d:f
+::1
 ;
 4:name:plik2
 5:owner:0101:777:626:0092
 6:pieces:
 :akuku
 7:seeds:
+::1
 ;

@@ -2,6 +2,7 @@
 #define TIN_USER_H
 
 #include <stdbool.h>
+#include <stdio.h>
 #include "socket.h"
 //funkcja zwraca 0 jesli zakończyła się sukcesem i 1 gdy był błąd
 int sendDataToDifferentUser(int socketId, char* data, int dataSize, bool trackerOperation);

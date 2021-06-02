@@ -32,7 +32,6 @@ int writemsg(int ID, char *message) {
     msg_write[ID] = (msg_write[ID] + 1) % MSG_ARRAY_SIZE;
 
     pthread_mutex_unlock(writemsg_lock + ID);
-
     return 0;
 }
 
@@ -154,8 +153,7 @@ void *queueSection(void *clientAddr) {
 
     while (1) {
         char buffer[64];
-        if (readmsg(numberOfQueueToRead, buffer) == 0)
-        {
+        if (readmsg(numberOfQueueToRead, buffer) == 0){
             char option = *buffer;
 
             //koniec słuchania, zamykamy wszystko
@@ -168,70 +166,98 @@ void *queueSection(void *clientAddr) {
 
                 //tworzymy nowy socket i bindujemy mu nasz adres
                 newSocketId = createSocket(port, clientAddress);
+                connectToDifferentSocket(newSocketId, tracker);
                 sendDataToDifferentUser(newSocketId, &option, 1, true);
                 char resultData[1024];
                 getDataFromDifferentUser(newSocketId, resultData, true);
-
                 if (option == '1') {
-                    if (resultData[0] == 'O' && resultData[1] == 'K') {
+                    if (resultData[0] != '0') {
                         //rozmiar pliku torrent
                         int readMsg = readmsg(numberOfQueueToRead, buffer);
                         if (readMsg != 0) {
                             break;
                         }
+
+                        FILE *file;
                         //liczymy rozmiar pliku
-                        int count = 1;
-                        char size[20];
-                        int i = 0;
-                        char c;
-                        while ((c = *buffer) != '\n') {
-                            size[i] = c;
-                            count++;
-                            i++;
-                        }
-                        int fileSize = 0;
-                        i = 0;
-                        for (int j = count; j >= 1; --j) {
-                            fileSize += size[i] * 10 ^ j;
-                            i++;
-                        }
 
-                        readMsg = readmsg(numberOfQueueToRead, buffer);
+                        int size = atoi(buffer);
+                        printf("size %d\n ", size);
+                        char fileName[64];
+                        readMsg = readmsg(numberOfQueueToRead, fileName);
                         if (readMsg != 0) {
                             break;
                         }
 
-                        sendDataToDifferentUser(newSocketId, buffer, fileSize, true);
+                        file = fopen(fileName, "rw");
+                        if (file == NULL) {
+                            printf("FILE NAME %s", fileName);
+                            break;
+                        }
+
+                        char sendData[1024];
+                        while(fgets(sendData, 1024, file) != NULL) {
+                            printf("%s", sendData);
+                            sendDataToDifferentUser(newSocketId, buffer, size, true);
+                            bzero(sendData, 1024);
+                        }
+                        fclose(file);
+//                        sendDataToDifferentUser(newSocketId, buffer, fileSize, true);
+
                     }
-                } else if (option == '2') {
-                    if (resultData[0] == 'O' && resultData[1] == 'K') {
+                    closeSocket(newSocketId);
+                } else if (option == '3') {
+                    puts("Delete file in tracker.\n");
+                    if (resultData[0] != '0') {
                         int readMsg = readmsg(numberOfQueueToRead, buffer);
                         if (readMsg != 0) {
                             break;
                         }
                         sendDataToDifferentUser(newSocketId, buffer, MSG_LENGTH - 1, true);
+                        getDataFromDifferentUser(newSocketId, buffer, true);
+                        if(buffer[0] != '0'){
+                            printf("%s", buffer);
+                        }
                     }
+                    closeSocket(newSocketId);
+
                 } else {
-                    if (resultData[0] == 'O' && resultData[1] == 'K') {
+                    puts("Get file list from tracker.\n");
+                    if (resultData[0] != '-') {
                         int readMsg = readmsg(numberOfQueueToRead, buffer);
                         if (readMsg != 0) {
                             break;
                         }
-                        //send file name
+                        //wysyłamy nazwę pliku
                         sendDataToDifferentUser(newSocketId, buffer, MSG_LENGTH - 1, true);
-                        int sendResult = 1;
+
+                        //przygotowujemy się do czytania odpowiedzi
+                        int sendResult = 0;
+                        char readData[1024];
+                        for(int i = 0; i <1024 ; ++i){
+                            readData[i]= 0;
+                        }
                         //dopoki nie koniec pliku to piszemy do kolejki
-                        while (sendResult == 1) {
-                            sendResult = getDataFromDifferentUser(newSocketId, resultData, true);
-                            //jesli -1 to poleciał timeout
-                            if (sendResult != -1) {
+                        do{
+                            sendResult = getDataFromDifferentUser(newSocketId, readData, true);
+                            if(readData[0] != 'x' ){
+                                puts("Data receiving...\n");
+                                printf(" %s\n", readData);
+                                for(int i = 0; i <1024 ; ++i){
+                                    readData[i]= 0;
+                                }
                                 writemsg(numberOfQueueToWrite, resultData);
                             }
+                            else{
+                                sendResult = -1;
+                                printf("File %s not found in tracker\n", buffer);
+                            }
                         }
-
+                        while (sendResult != -1);
                     }
+                    closeSocket(newSocketId);
                 }
-                closeSocket(newSocketId);
+
             }
 
             //połączenie do innego peeru
@@ -306,6 +332,7 @@ void *queueSection(void *clientAddr) {
 
         }
     }
+
 }
 
 void *socketSupervisorModule(void *clientAddress) {
@@ -359,10 +386,14 @@ int main() {
     printf("IP parsed in main: %s\n", buffer);
 
 //TEST//
-
-    writemsg(1, "4");
-    writemsg(1, "::1");
-    writemsg(1, "test.txt");
+//    writemsg(1, "2");
+//    writemsg(1, "plik4");
+//    writemsg(1, "2");
+//    writemsg(1, "plik2");
+    writemsg(1, "1");
+    writemsg(1, "163");
+    writemsg(1, "sharedFiles/torrent.txt");
+    writemsg(1, "0");
 
 //!TEST//
 
