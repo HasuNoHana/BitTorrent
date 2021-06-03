@@ -1,4 +1,5 @@
 #include "../include/client.h"
+#include "../include/queue.h"
 struct in6_addr trackerAddress;
 
 void *listenSection(void *userAddr) {
@@ -50,8 +51,8 @@ void *queueSection(void *clientAddr) {
 
     struct in6_addr clientAddress = *(struct in6_addr *) clientAddr;
 
-    int numberOfQueueToRead = 1;
-    int numberOfQueueToWrite = 2;
+    int numberOfQueueToRead = socketQueue;
+    int numberOfQueueToWrite = ioQueue;
     int newSocketId;
     int port = 3030;
 
