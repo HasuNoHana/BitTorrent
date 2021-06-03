@@ -1,6 +1,4 @@
 #include "../include/client.h"
-#include "../include/queue.h"
-
 struct in6_addr trackerAddress;
 
 void *listenSection(void *userAddr) {
@@ -14,12 +12,11 @@ void *listenSection(void *userAddr) {
         char fileName[64];
 
         int socketToListen = createSocket(3001, userAddress);
-        int acceptedSocket;
-
         listenToConnect(socketToListen);
 
         struct sockaddr_in6 client;
-        if (acceptedSocket = acceptConnection(socketToListen, client) == 1) {
+        int acceptSocket = acceptConnection(socketToListen, client);
+        if ( acceptSocket == -1) {
             break;
         } else {
             char buf6[INET6_ADDRSTRLEN];
@@ -28,9 +25,8 @@ void *listenSection(void *userAddr) {
 
             printf("Accepted connection from %s\n", buf6);
 
-            getDataFromDifferentUser(acceptedSocket, fileName, true);
+            getDataFromDifferentUser(acceptSocket, fileName, true);
 
-            printf("%s\n", fileName);
             FILE *file = fopen(fileName, "r");
             if (file == NULL) {
                 printf("Open file %s  to read failed!", fileName);
@@ -39,14 +35,13 @@ void *listenSection(void *userAddr) {
 
             char sendData[1024];
             while (fgets(sendData, 1024, file) != NULL) {
-                printf("%s\n", sendData);
-                sendDataToDifferentUser(acceptedSocket, sendData, 1024, true);
+                sendDataToDifferentUser(acceptSocket, sendData, 1024, true);
                 bzero(sendData, 1024);
             }
             fclose(file);
             printf("File %s sent!\n", fileName);
+            closeSocket(acceptSocket);
             closeSocket(socketToListen);
-            closeSocket(acceptedSocket);
         }
     }
 }
@@ -55,8 +50,8 @@ void *queueSection(void *clientAddr) {
 
     struct in6_addr clientAddress = *(struct in6_addr *) clientAddr;
 
-    int numberOfQueueToRead = socketQueue;
-    int numberOfQueueToWrite = ioQueue;
+    int numberOfQueueToRead = 1;
+    int numberOfQueueToWrite = 2;
     int newSocketId;
     int port = 3030;
 
@@ -114,12 +109,14 @@ void *queueSection(void *clientAddr) {
                             break;
                         }
 
-                        char sendData[1024];
-                        while(fgets(sendData, 1024, file) != NULL) {
+                        sendFileToTracker(file, newSocketId);
 
-                            sendDataToDifferentUser(newSocketId, sendData, size, true);
-                            bzero(sendData, 1024);
-                        }
+                        //char sendData[1024];
+                        //while(fgets(sendData, 1024, file) != NULL) {
+                        //   sendDataToDifferentUser(newSocketId, sendData, size, true);
+                        //   bzero(sendData, 1024);
+                        //}
+
                         fclose(file);
                         printf("Torrent file sent!\n");
                     }
@@ -199,10 +196,11 @@ void *queueSection(void *clientAddr) {
                     }
                     printf("%s\n", fileName);
                     //send file name
-                    sendDataToDifferentUser(newSocketId, "sharedFiles/torrent.txt", MSG_LENGTH, true);
+                    sendDataToDifferentUser(newSocketId, fileName, MSG_LENGTH, true);
 
                     FILE *file;
 
+                    //URUCHAMIAJĄC NA JEDNEJ MASZYNIE NALEZY ZMIENIC ZEBY NIE CZYTALO I PISALO Z JEDNEGO PLIKU BO NICZEGO NIE PRZECZYTA
                     file = fopen(fileName, "w");
                     if (file == NULL) {
                         printf("Open file %s to write failed!", fileName);
@@ -211,14 +209,15 @@ void *queueSection(void *clientAddr) {
 
                     char resultData[1024];
                     int sendResult = 1;
+                    bool received = false;
 
-                    //dopoki nie koniec pliku to piszemy do kolejki
+                    //dopoki nie koniec pliku to piszemy do pliku
                     while (sendResult == 1) {
                         sendResult = getDataFromDifferentUser(newSocketId, resultData, true);
                         //jesli -1 to poleciał timeout
                         if (sendResult != -1) {
-                            printf("%s", resultData);
                             fprintf(file, "%s", resultData);
+                            received = true;
                         } else {
                             break;
                         }
@@ -226,20 +225,23 @@ void *queueSection(void *clientAddr) {
                     fclose(file);
                     //zamykamy połączenie z peerem
                     closeSocket(newSocketId);
-
-                    //wysyłamy info o posiadaniu plików do trackera
-                    newSocketId = createSocket(port, clientAddress);
-                    //jeśli połaczenie do trackera się powiodło
-                    if (connectToDifferentSocket(newSocketId, tracker) == 0) {
-                        sendDataToDifferentUser(newSocketId, "4", 1, true);
-                        getDataFromDifferentUser(newSocketId, resultData, true);
-                        if (resultData[0] != '0') {
-                            sendDataToDifferentUser(newSocketId, fileName, MSG_LENGTH - 1, true);
+                    if(received){
+                        //wysyłamy info o posiadaniu plików do trackera
+                        newSocketId = createSocket(port, clientAddress);
+                        //jeśli połaczenie do trackera się powiodło
+                        if (connectToDifferentSocket(newSocketId, tracker) == 0) {
+                            sendDataToDifferentUser(newSocketId, "4", 1, true);
+                            getDataFromDifferentUser(newSocketId, resultData, true);
+                            if (resultData[0] != '0') {
+                                sendDataToDifferentUser(newSocketId, fileName, MSG_LENGTH - 1, true);
+                                getDataFromDifferentUser(newSocketId, resultData, true);
+                            }
                         }
+                        closeSocket(newSocketId);
                     }
                 }
                 //zamykamy ostatnio utworzony socket
-                closeSocket(newSocketId);
+
 
             }
 
