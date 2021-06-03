@@ -5,3 +5,4 @@ run: src/main.c src/file_handler.c src/socket.c src/client_service.c src/filelis
 
 clean:
 	rm run 
+	rm -r files/*

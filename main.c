@@ -31,9 +31,9 @@ int main() {
     printf("IP parsed in main: %s\n", buffer);
 
 //TEST//
-    //writemsg(1, "1");
-    //writemsg(1, "163");
-    //writemsg(1, "sharedFiles/torrent.txt");
+//    writemsg(1, "1");
+//    writemsg(1, "163");
+//    writemsg(1, "sharedFiles/torrent.txt");
 //    writemsg(1, "3");
 //    writemsg(1, "plik3");
 //    writemsg(1, "3");

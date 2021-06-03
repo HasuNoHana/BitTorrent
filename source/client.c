@@ -109,12 +109,14 @@ void *queueSection(void *clientAddr) {
                             break;
                         }
 
-                        char sendData[1024];
-                        while(fgets(sendData, 1024, file) != NULL) {
+                        sendFileToTracker(file, newSocketId);
 
-                            sendDataToDifferentUser(newSocketId, sendData, size, true);
-                            bzero(sendData, 1024);
-                        }
+                        //char sendData[1024];
+                        //while(fgets(sendData, 1024, file) != NULL) {
+                        //   sendDataToDifferentUser(newSocketId, sendData, size, true);
+                        //   bzero(sendData, 1024);
+                        //}
+
                         fclose(file);
                         printf("Torrent file sent!\n");
                     }

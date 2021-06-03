@@ -34,10 +34,10 @@ void download(int client_socket, char* clientIP, char* filename)
     char* buffer_out = malloc(70);
     char* trimmed_filename = trimwhitespace(filename);
 
-    char filepath[8+FILEN_LENGTH+IP_MAX];
-    memset(filepath, 0, 8+FILEN_LENGTH+IP_MAX);
+    char filepath[14+FILEN_LENGTH+IP_MAX];
+    memset(filepath, 0, 14+FILEN_LENGTH+IP_MAX);
 
-    strcat(filepath, "seeds_");
+    strcat(filepath, "files/seeds_");
     strcat(filepath, trimmed_filename);
     strcat(filepath, "[");
     strcat(filepath, clientIP);

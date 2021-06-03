@@ -97,3 +97,16 @@ int receiveData(int socketDescriptor, int dataSize, char data[1024]) {
 //    return numberOfRead;
 }
 
+void sendFileToTracker(FILE *fp, int client_socket){
+    char* data = malloc(1024);
+    while(fgets(data, 1024, fp) != NULL) {
+        int writeNumber = send(client_socket, data, 1024, 0);
+        if (writeNumber == -1){
+            perror("[-] Error in sending file.");
+            exit(1);
+        }
+        bzero(data, 1024);
+    }
+    return;
+}
+

@@ -26,5 +26,7 @@ int sendData(int socketDescriptor, char *buf, int dataSize);
 
 int receiveData(int socketDescriptor, int dataSize, char* data);
 
+void sendFileToTracker(FILE *fp, int client_socket);
+
 #endif
 

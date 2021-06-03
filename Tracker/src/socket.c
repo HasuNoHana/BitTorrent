@@ -100,23 +100,27 @@ void *serveRequest(void *arguments)
 char* receiveFile(int client_socket, char* clientIP)
 {
     int n = 1;
-    char *filepath = malloc(12+IP_MAX);
-    memset(filepath, 0, 12+IP_MAX);
+    int i = 0;
+    char *filepath = malloc(18+IP_MAX);
+    memset(filepath, 0, 18+IP_MAX);
 
-    strcat(filepath, "torrent_");
+    strcat(filepath, "files/torrent_");
     strcat(filepath, clientIP);
     strcat(filepath, ".txt");
         
     FILE *fp = getFilePointer(1, filepath);
 
     char* buffer = malloc(DATASIZE);
-
+    printf("Receiving: ... \n");
     while (n>0){
         n = recv(client_socket, buffer, DATASIZE, 0);
-        printf( "%s\n", buffer);
+        printf( "%d: %s\n",i,  buffer);
         fprintf(fp, "%s", buffer);
         bzero(buffer, DATASIZE);
+        i++;
     }
+    
+    printf("Data received.\n");
     fclose(fp);
     return filepath;
 }
@@ -134,3 +138,5 @@ void sendFile(FILE *fp, int client_socket){
     }
     return;
 }
+
+

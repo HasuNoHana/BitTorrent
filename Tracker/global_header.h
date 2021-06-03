@@ -154,3 +154,7 @@ void loopSeeders();
  * Carries out commands from functions from the customer service section.
  */
 int accessFilesList(int mode, char* filename, char* filepath, char* clientIP);
+
+
+int getDataFromDifferentUser(int userSocketId, char resultData[1024], int trackerOperation);
+int receiveData(int socketDescriptor, int dataSize, char data[1024]);

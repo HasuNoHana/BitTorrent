@@ -11,14 +11,14 @@ void insertPiece(char* filename, char* line, char* clientIP, int isOriginal, int
     char* piece = malloc(PIECE_LENGTH);
     char* seedIP = clientIP;
 
-    int i=1;
+    int i=3;
 
     while (current->next != NULL){
         if(strcmp(current->filename, filename)==0) break; 
         else current = current->next;
     }
 
-    if(readLine == 1) for(;i<length-1; i++) *(piece+i-1) = line[i];  
+    if(readLine == 1) for(;i<length-1; i++) *(piece+i-3) = line[i];  
     else if(readLine==0 && current->next == NULL) return;
 
     if(current->next == NULL){
