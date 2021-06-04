@@ -178,7 +178,7 @@ char *getPathOfSharedDir(char *fileName, int fileNameSize) {
 }
 
 char *getFilePath(char *dirPath, char* originalFileName, int originalFileNamelength, int fileName) {
-    char *stringFileName[fileName];
+    char stringFileName[fileName];
     sprintf(stringFileName, "%d", fileName);
 
     //size = folderName size + originalFileNamelength size + sharedFileName size + extension size + "/" character + 1

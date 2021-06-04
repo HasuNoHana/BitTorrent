@@ -1,4 +1,6 @@
 #include "../include/queue.h"
+#include <string.h>
+#include <pthread.h>
 
 pthread_mutex_t writemsg_lock[MODULE_COUNT];
  
@@ -36,31 +38,133 @@ int readmsg(int ID, char *buffer)
     return 0;
 }
 
-int sock_DownloadFromPeer(char fileName[])
+void sock_DownloadFromPeer(char ipAddress[], char fileName[])
 {
     writemsg(socketQueue, "4");
+    writemsg(socketQueue, ipAddress);
     writemsg(socketQueue, fileName);
+    writemsg(socketQueue, "0");
+
+    return;
 }
 
-int sock_PostFileToTracker(char fileName[], int fileSize)
+void sock_PostFileToTracker(char fileName[], int fileSize)
 {
     writemsg(socketQueue, "1");
     char buffer[12];
     sprintf(buffer, "%d", fileSize);
     writemsg(socketQueue, buffer);
     writemsg(socketQueue, fileName);
+
+    return;
 }
 
-int sock_DeleteFileFromTracker(char fileName[])
+void sock_DeleteFileFromTracker(char fileName[])
 {
     writemsg(socketQueue, "3");
     writemsg(socketQueue, fileName);
+
+    return;
 }
 
-int sock_RequestFileList(char fileName[])
+void sock_RequestFileList(char fileName[])
 {
     writemsg(socketQueue, "2");
     writemsg(socketQueue, fileName);
+
+    return;
+}
+
+void parseTrackerDataAndPostToQueue(int QueueID, int dataSize, char data[])
+{
+    puts("\nParsing started...\n");
+
+    char ipFlag = 0;
+    char compareBuf[] = "seeds:";
+    char buffer[128];
+
+    int counter = 0;
+    int last = 0;
+
+    printf("ip addresses seeding the file:\n\n");
+
+    while(data[counter] != 0 && counter < dataSize)
+    {
+        memset(buffer, 0, sizeof(buffer));
+        if(data[counter] == 10 || counter == dataSize - 1) //getline lub EOF
+        {
+            strncpy(buffer, data+last, counter-last);
+            last = counter+1;   //pomijamy newline
+
+            if(ipFlag == 0)
+            {
+                if(strcmp(buffer, compareBuf) == 0) //znaleziono linię seeds:, teraz można czytać linie IP
+                {
+                    ipFlag = 1;
+                }
+            }
+
+            else
+            {
+                printf("%s\n", buffer);
+                writemsg(QueueID, buffer);
+            }            
+        }
+        counter++;
+    }
+    writemsg(QueueID, "done");
+    return;
+}
+
+void downloadFile(char fileName[], char clientIP[])
+{
+    char buffer[40];
+    char ipArray[16][40];
+    int ipCount = 0;
+    sock_RequestFileList(fileName);
+    sleep(3);     //funkcja czeka na przetworzenie danych przez moduł socketowy
+
+    for(int i = 0; i < 16; i++) //zapisz wszystkie odczytane adresy ip do tabeli
+    {
+        readmsg(ioQueue, buffer);
+
+        if (strcmp(buffer, "done") == 0) {
+            break;
+        } else {
+            if(strcmp(buffer, clientIP) != 0)
+            {
+                strcpy(ipArray[i], buffer);
+                ++ipCount;
+            }
+        }
+    }
+
+    if(ipCount == 0)
+    {
+        puts("No vaild IP addresses were passed, aborting file download.");
+        return;
+    }
+
+    while (strcmp(buffer, "done") != 0) //wyczyść kolejkę z nadmiarowych adresów ip
+    {
+        readmsg(ioQueue, buffer);
+    }
+
+    memset(buffer, 0, sizeof(buffer));
+
+    while (strcmp(buffer, "success") != 0 && ipCount > 0)
+    {
+        sock_DownloadFromPeer(ipArray[ipCount-1], fileName);
+        readmsg(socketQueue, buffer);
+        --ipCount;
+    }
+
+    if(strcmp(buffer, "success") != 0)
+    {
+        printf("No seeds have responded. File could not be downloaded.\n");
+    }
+
+    return;
 }
 
 int prepareQueueMutexes()

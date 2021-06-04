@@ -69,7 +69,7 @@ int connectToDifferentSocket(int socketDescriptor, struct sockaddr_in6 server) {
 
     if (connect(socketDescriptor, (struct sockaddr *) &server, sizeof(server)) < 0) {
         perror("Connect failed.");
-        exit(1);
+        return 1;
     }
     puts("Connected.\n");
     return 0;

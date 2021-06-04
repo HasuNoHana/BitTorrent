@@ -1,5 +1,7 @@
 #include "../include/client.h"
 #include "../include/queue.h"
+#include <string.h>
+
 struct in6_addr trackerAddress;
 
 void *listenSection(void *userAddr) {
@@ -158,11 +160,43 @@ void *queueSection(void *clientAddr) {
                             sendResult = getDataFromDifferentUser(newSocketId, readData, true);
                             if(readData[0] != '-' ){
                                 puts("Data receiving...\n");
-                                printf(" %s\n", readData);
-                                for(int i = 0; i <1024 ; ++i){
-                                    readData[i]= 0;
+                                
+                                int zeroCounter = 0;
+                                int msgSize = 0;
+
+                                for(int i = 0; i <1024 ; i++){
+                                    printf("%d ", readData[i], readData[i]);
+                                    ++msgSize;
+                                    if(readData[i] == 0)
+                                    {
+                                        zeroCounter++;
+                                        readData[i] = 63;
+                                    }
+                                    else
+                                        zeroCounter = 0;
+
+                                    if(zeroCounter == 3)
+                                    {
+                                        readData[i-2] = 0;
+                                        msgSize -= 3;
+                                        break;
+                                    }
                                 }
-                                writemsg(numberOfQueueToWrite, resultData);
+
+                                char dataToSend[1024];
+                                strncpy(dataToSend, readData, msgSize);
+                                if(msgSize != 1024) {
+                                    dataToSend[msgSize] = '\0';                                    
+                                }
+
+                                for(int i = 0; i <1024 ; i++){
+                                    readData[i] = 0;
+                                }
+
+                                parseTrackerDataAndPostToQueue(numberOfQueueToWrite, msgSize, dataToSend);
+
+                                //writemsg(numberOfQueueToWrite, resultData);
+                                printf("\n\n->%s\n", dataToSend);
                             }
                             else{
                                 sendResult = -1;
@@ -189,7 +223,14 @@ void *queueSection(void *clientAddr) {
                 client.sin6_port = htons(3001);
                 client.sin6_family = AF_INET6;
 
-                if (connectToDifferentSocket(newSocketId, client) == 0) {
+                if (connectToDifferentSocket(newSocketId, client) == 1)
+                {
+                    writemsg(numberOfQueueToWrite, "failure");
+                }
+
+                else if (connectToDifferentSocket(newSocketId, client) == 0) {
+                    writemsg(numberOfQueueToWrite, "success");
+
                     char fileName[64];
                     int readMsg = readmsg(numberOfQueueToRead, fileName);
                     if (readMsg != 0) {
@@ -255,9 +296,12 @@ void *socketSupervisorModule(void *clientAddress) {
     pthread_t listensocket_thread_id;
     pthread_t connectsocket_thread_id;
 
+    /*
+
     int mode = 0;
     printf("Please input application mode (0 for server, 1 for client): ");
     scanf("%d", &mode);
+    
 
     //do nasłuchiwania połączeń
     if (mode == 0) {
@@ -276,6 +320,19 @@ void *socketSupervisorModule(void *clientAddress) {
         }
         pthread_join(connectsocket_thread_id, NULL);
     }
+
+    */
+
+    if (pthread_create(&listensocket_thread_id, NULL, listenSection, clientAddress)) {
+            printf("Failed to create ListenSocket\n");
+            exit(1);
+        }
+    if (pthread_create(&connectsocket_thread_id, NULL, queueSection, clientAddress)) {
+            printf("Failed to create ConnectSocket\n");
+            exit(1);
+        }
+    pthread_join(connectsocket_thread_id, NULL);
+    pthread_join(listensocket_thread_id, NULL);
 }
 void setTrackerAddress(char tracker[40]){
     inet_pton(AF_INET6, tracker, &(trackerAddress));

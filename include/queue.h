@@ -24,10 +24,13 @@ extern int msg_write[MODULE_COUNT];
 int writemsg(int ID, char *message);
 int readmsg(int ID, char *buffer);
 
-int sock_DownloadFromPeer(char fileName[]);
-int sock_PostFileToTracker(char fileName[], int fileSize);
-int sock_DeleteFileFromTracker(char fileName[]);
-int sock_RequestFileList(char fileName[]);
+void sock_DownloadFromPeer(char ipAddress[], char fileName[]);
+void sock_PostFileToTracker(char fileName[], int fileSize);
+void sock_DeleteFileFromTracker(char fileName[]);
+void sock_RequestFileList(char fileName[]);
+
+void parseTrackerDataAndPostToQueue(int QueueID, int dataSize, char data[]);
+void downloadFile(char fileName[], char clientIP[]);
 
 int prepareQueueMutexes();
 int destroyQueueMutexes();
