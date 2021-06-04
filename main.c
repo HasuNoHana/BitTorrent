@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include "include/queue.h"
 #include "include/client.h"
+#include "include/metadata.h"
 //#include "include/queue.h"
 
 #define WHITEBACK "\033[7;37m"
@@ -96,15 +97,18 @@ void choseOption(int markerpos) {//TODO implement
     resetTermios();
     if(markerpos == 0)//Delete File
     {
+        char filenamePath[40];
+        printf("What is the path to file that you wolud like to delete?\n");
+        scanf ("%40s", filenamePath);
+        sock_DeleteFileFromTracker(filenamePath);
 
     } else if (markerpos == 1)//Share File
     {
-        char filename[40];
+        char filenamePath[40];
         printf("What is the path to file that you wolud like to share?\n");
-        scanf ("%40s",filename);
-        int filesize = 2; //TODO call size counting function
-//        sock_PostFileToTracker(filename, filesize);
-        //TODO czy coś jeszcze trzeba tu zrobić?
+        scanf ("%40s", filenamePath);
+        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
+
     } else if (markerpos == 2){//Download File
 
     } else{
