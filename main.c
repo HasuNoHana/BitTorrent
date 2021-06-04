@@ -30,11 +30,19 @@ void overrideTermios(void) {
     tcsetattr(0, TCSANOW, &new1);
 }
  
-char menu_tabs[MENU_TAB_COUNT][15] = {"File transfer", "Connect", "Options"};
-char menu_options[MENU_TAB_COUNT][MENU_OPTION_COUNT][15] = {{"1. aaa", "2. bbb"}, {"test", "test2"}, {"111", "222"}};
+char menu_tabs[MENU_TAB_COUNT][15] = {"Delete File", "Share File", "Download File"};
+char menu_options[MENU_TAB_COUNT][MENU_OPTION_COUNT][15] = {{}, {}, {}};
  
 int menu_markerpos = 0;
 int options_markerpos[MENU_TAB_COUNT] = {0};
+
+//void initializeMenuOptions(){
+//    menu_options[MENU_TAB_COUNT] =
+//            malloc(sizeof(Node) * MENU_TAB_COUNT);
+//    for( int i=0; i<MENU_TAB_COUNT; i++){
+//        menu_options[i] = mall
+//    }
+//}
  
 void printUI()
 {
@@ -71,7 +79,23 @@ void printUI()
     }
     printf("\n");
 }
- 
+
+void choseOption(int markerpos) {//TODO implement
+    if(markerpos == 0)//Delete File
+    {
+
+    } else if (markerpos == 1)//Share File
+    {
+
+    } else if (markerpos == 2){//Download File
+
+    } else{
+        printf("There is no Menu Option!");
+        exit(1);
+    }
+
+}
+
 void menuInput(char control)
 {
     switch(control)
@@ -103,12 +127,20 @@ void menuInput(char control)
             else
                 ++menu_markerpos;
             break;
+        case '\n':
+            printf("enter");
+            printf("%d", menu_markerpos);
+            printf(menu_tabs[menu_markerpos]);
+            choseOption(menu_markerpos);
+            break;
     }
 }
- 
+
 int main(void)
 {
+//    printf("%s", "Press 'q' to exit");
     char c;
+//    initializeMenuOptions();
     initTermios(0);
     overrideTermios();
  
@@ -116,6 +148,8 @@ int main(void)
     {
         printUI();
         read(0, &c, 1);
+        if(c == 'q')
+            break;
         menuInput(c);
     }
  
