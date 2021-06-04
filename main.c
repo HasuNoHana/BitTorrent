@@ -17,9 +17,7 @@
 #define RESET "\033[0m"
 #define MENU_TAB_COUNT 3
 #define MENU_OPTION_COUNT 2
-#define MSG_LENGTH 64
-#define MSG_ARRAY_SIZE 32
-#define MODULE_COUNT 4
+
 
 /* Initialize new terminal i/o settings */
 static struct termios old, new1;
@@ -101,14 +99,14 @@ void choseOption(int markerpos) {//TODO implement
         printf("What is the path to file that you wolud like to delete?\n");
         scanf ("%40s", filenamePath);
 
-//        sock_DeleteFileFromTracker(filenamePath);
+        sock_DeleteFileFromTracker(filenamePath);
 
     } else if (markerpos == 1)//Share File
     {
         char filenamePath[40];
         printf("What is the path to file that you wolud like to share?\n");
         scanf ("%40s", filenamePath);
-//        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
+        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
 
     } else if (markerpos == 2){//Download File
 
