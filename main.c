@@ -11,7 +11,7 @@
 #include "include/queue.h"
 #include "include/client.h"
 #include "include/metadata.h"
-//#include "include/queue.h"
+#include "include/queue.h"
 
 #define WHITEBACK "\033[7;37m"
 #define RESET "\033[0m"
@@ -100,14 +100,15 @@ void choseOption(int markerpos) {//TODO implement
         char filenamePath[40];
         printf("What is the path to file that you wolud like to delete?\n");
         scanf ("%40s", filenamePath);
-        sock_DeleteFileFromTracker(filenamePath);
+
+//        sock_DeleteFileFromTracker(filenamePath);
 
     } else if (markerpos == 1)//Share File
     {
         char filenamePath[40];
         printf("What is the path to file that you wolud like to share?\n");
         scanf ("%40s", filenamePath);
-        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
+//        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
 
     } else if (markerpos == 2){//Download File
 
@@ -152,9 +153,6 @@ void menuInput(char control)
                 ++menu_markerpos;
             break;
         case '\n':
-            printf("enter");
-            printf("%d", menu_markerpos);
-            printf(menu_tabs[menu_markerpos]);
             choseOption(menu_markerpos);
             break;
     }
