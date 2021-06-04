@@ -139,6 +139,7 @@ void menuInput(char control)
             else
                 --menu_markerpos;
             break;
+#include "include/metadata.h"
 
         case 'd':
             if(menu_markerpos == MENU_TAB_COUNT - 1)
