@@ -160,7 +160,7 @@ void *queueSection(void *clientAddr) {
                             sendResult = getDataFromDifferentUser(newSocketId, readData, true);
                             if(readData[0] != '-' ){
                                 puts("Data receiving...\n");
-                                
+
                                 int zeroCounter = 0;
                                 int msgSize = 0;
 
@@ -186,7 +186,7 @@ void *queueSection(void *clientAddr) {
                                 char dataToSend[1024];
                                 strncpy(dataToSend, readData, msgSize);
                                 if(msgSize != 1024) {
-                                    dataToSend[msgSize] = '\0';                                    
+                                    dataToSend[msgSize] = '\0';
                                 }
 
                                 for(int i = 0; i <1024 ; i++){
@@ -288,6 +288,9 @@ void *queueSection(void *clientAddr) {
             }
 
         }
+        else{
+        	sleep(1);	//jeśli moduł jest bezczynny, usypiamy go do wyeliminowania ciężkiego active pollingu
+        }
     }
 
 }
@@ -301,7 +304,7 @@ void *socketSupervisorModule(void *clientAddress) {
     int mode = 0;
     printf("Please input application mode (0 for server, 1 for client): ");
     scanf("%d", &mode);
-    
+
 
     //do nasłuchiwania połączeń
     if (mode == 0) {
