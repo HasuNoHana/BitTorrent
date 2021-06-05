@@ -86,10 +86,10 @@ void choseOption(int markerpos) {//TODO implement
 
     } else if (markerpos == 1)//Share File
     {
-        char filenamePath[40];
-        printf("What is the path to file that you would like to share?\n");
-        scanf ("%40s", filenamePath);
-        sock_PostFileToTracker(filenamePath, getSharedFileSizeInBytes(filenamePath));
+        char filename[40];
+        printf("What is the name of file that you would like to share?\n");
+        scanf ("%40s", filename);
+        sock_PostFileToTracker(filename, getSharedFileSizeInBytes(filename));
 
     } else if (markerpos == 2){//Download File
         char filenamePath[40];
