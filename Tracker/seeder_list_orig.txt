@@ -1,0 +1,16 @@
+4:name:plik1
+5:owner:x:y:z
+6:pieces:
+32:alamakota
+32:alibaba
+7:seeds:
+a:b:c:d:f
+::1
+;
+4:name:plik2
+5:owner:0101:777:626:0092
+6:pieces:
+32:akuku
+7:seeds:
+::1
+;
