@@ -2,16 +2,11 @@
 // Created by zuznanna on 25.05.2021.
 //
 #include <stdio.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <openssl/md5.h>
 #include <dirent.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 
 char* SHARED_FILE_EXTENSION = ".txt";
@@ -234,14 +229,7 @@ void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trac
     char *metadataPath = getPathOfMetadataFile(sharedFileName, sharedFileNameSize);
 
     long long sharedFileSizeInBytes = getSharedFileSizeInBytes(sharedPath);
-
     unsigned char *hash = getMD5Hash(sharedPath);
-
-//    printHash(hash);
-
-
-
-
 
     FILE *metadataFile = fopen(metadataPath,"w");
     if(metadataFile == NULL){
@@ -254,6 +242,4 @@ void createMetadataFile(char *sharedFileName, int sharedFileNameSize, char *trac
     fprintf(metadataFile, "%s", "e");
 
     fclose(metadataFile);
-
-
 }
