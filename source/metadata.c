@@ -108,7 +108,7 @@ char* getPathOfFirstPiece(char *sharedFileName, int fileNameSize) {
 
 void insertPieceLength(FILE *metadataFile, long long int pieceLength) {
     fprintf(metadataFile, "%s", "12:piece lengthi");
-    fprintf(metadataFile, "%d", pieceLength);
+    fprintf(metadataFile, "%lld", pieceLength);
     fprintf(metadataFile, "%s", "e\n");
 }
 
