@@ -107,6 +107,7 @@ void choseOption(int markerpos) {//TODO implement
 
 void menuInput(char control)
 {
+	system("clear");
     switch(control)
     {
         case 'w':
@@ -153,6 +154,7 @@ void* ioModule(void* clientAddr)
     initTermios(0);
     overrideTermios();
 
+	system("clear");
     while (1)
     {
         printUI();
